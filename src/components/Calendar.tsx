@@ -14,15 +14,25 @@ interface CalendarProps {
   onEventClick: (booking: Booking) => void;
   onViewChange: (view: CalendarView) => void;
   currentView: CalendarView;
+  height?: string | number;
+  onPrev?: () => void;
+  onNext?: () => void;
+  onToday?: () => void;
+  onTitleChange?: (title: string) => void;
 }
 
-const Calendar: React.FC<CalendarProps> = ({
+const Calendar = React.forwardRef<any, CalendarProps>(({
   bookings,
   onDateClick,
   onEventClick,
   onViewChange,
-  currentView
-}) => {
+  currentView,
+  height,
+  onPrev,
+  onNext,
+  onToday,
+  onTitleChange
+}, ref) => {
   const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
@@ -47,6 +57,15 @@ const Calendar: React.FC<CalendarProps> = ({
     setEvents(formattedEvents);
   }, [bookings]);
 
+  // Use the forwarded ref for FullCalendar
+  const calendarRef = ref as React.RefObject<any>;
+  useEffect(() => {
+    if (calendarRef && 'current' in calendarRef && calendarRef.current && onTitleChange) {
+      const api = calendarRef.current.getApi();
+      onTitleChange(api.view.title);
+    }
+  }, [currentView, onTitleChange, calendarRef]);
+
   const handleDateClick = (arg: any) => {
     onDateClick(arg);
   };
@@ -69,13 +88,10 @@ const Calendar: React.FC<CalendarProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <FullCalendar
+        ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
         initialView={currentView}
-        headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-        }}
+        headerToolbar={false}
         views={{
           dayGridMonth: {
             titleFormat: { year: 'numeric', month: 'long' },
@@ -109,7 +125,31 @@ const Calendar: React.FC<CalendarProps> = ({
             }
           },
           timeGridDay: {
-            titleFormat: { year: 'numeric', month: 'long', day: 'numeric' }
+            titleFormat: { year: 'numeric', month: 'long', day: 'numeric' },
+            dayHeaderContent: (args: any) => {
+              const date = args.date;
+              const isToday = date.toDateString() === new Date().toDateString();
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>
+                    {date.toLocaleDateString(undefined, { weekday: 'long' })}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 600,
+                      marginTop: 2,
+                      color: isToday ? '#2563eb' : '#111827',
+                      background: isToday ? '#dbeafe' : 'transparent',
+                      borderRadius: '50%',
+                      padding: isToday ? '2px 8px' : '0'
+                    }}
+                  >
+                    {date.getDate()}
+                  </span>
+                </div>
+              );
+            }
           },
           listWeek: {
             titleFormat: { year: 'numeric', month: 'long', day: 'numeric' }
@@ -119,8 +159,14 @@ const Calendar: React.FC<CalendarProps> = ({
         dateClick={handleDateClick}
         select={handleSelect}
         eventClick={handleEventClick}
-        datesSet={handleViewChange}
-        height="auto"
+        datesSet={(arg: any) => {
+          handleViewChange(arg);
+          if (calendarRef && 'current' in calendarRef && calendarRef.current && onTitleChange) {
+            const api = calendarRef.current.getApi();
+            onTitleChange(api.view.title);
+          }
+        }}
+        height={height || 'auto'}
         eventTimeFormat={{
           hour: 'numeric',
           minute: '2-digit',
@@ -149,6 +195,6 @@ const Calendar: React.FC<CalendarProps> = ({
       />
     </div>
   );
-};
+});
 
 export default Calendar; 

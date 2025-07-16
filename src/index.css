@@ -95,3 +95,19 @@ header.sticky {
   z-index: 10;
   background: #fff;
 } 
+
+:root {
+  --calendar-height: 600px;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --calendar-height: 600px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --calendar-height: 600px;
+  }
+} 
