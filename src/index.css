@@ -96,6 +96,13 @@ header.sticky {
   background: #fff;
 } 
 
+/* Override FullCalendar's today cell highlight */
+.fc-day-today {
+/* background: #b07fde !important; */
+/* background: rgba(30, 58, 138, 0.05) */
+background: none !important;
+}
+
 :root {
   --calendar-height: 600px;
 }

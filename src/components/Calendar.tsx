@@ -95,7 +95,32 @@ const Calendar = React.forwardRef<any, CalendarProps>(({
         views={{
           dayGridMonth: {
             titleFormat: { year: 'numeric', month: 'long' },
-            dayHeaderFormat: { weekday: 'short' } // Only show day names in month view
+            dayHeaderFormat: { weekday: 'short' },
+            dayCellContent: (args: any) => {
+              const date = args.date;
+              const isToday = date.toDateString() === new Date().toDateString();
+              return (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: 32,
+                      height: 32,
+                      lineHeight: '32px',
+                      borderRadius: '50%',
+                      background: isToday ? '#bfdbfe' : 'transparent',
+                      color: isToday ? '#1e3a8a' : '#111827',
+                      fontWeight: 600,
+                      fontSize: 16,
+                      textAlign: 'center',
+                      transition: 'background 0.2s'
+                    }}
+                  >
+                    {date.getDate()}
+                  </span>
+                </div>
+              );
+            }
           },
           timeGridWeek: {
             titleFormat: { year: 'numeric', month: 'short', day: 'numeric' },
